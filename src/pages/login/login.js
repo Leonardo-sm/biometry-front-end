@@ -1,9 +1,8 @@
 let button = document.getElementById('send');
 
 button.addEventListener('click', function () {
-  toastr.error('Erro');
-  // window.location.replace('../dashboard/dashboard.html');
-  window.location.assign('../dashboard/dashboard.html');
+  window.location.assign('../loading/loading.html');
+  // toastr.error('Erro');
 
   // button.classList.add('text-red-500', 'font-bold');
 });

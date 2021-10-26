@@ -17,8 +17,11 @@ function createWindow() {
     minHeight: 700,
     backgroundColor: '#191622',
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
+      nodeIntegration: true,
+      webSecurity: process.env.NODE_ENV !== 'development',
+      nodeIntegrationInWorker: true,
+      enableRemoteModule: true,
+      contextIsolation: false,
       preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
     },
   })

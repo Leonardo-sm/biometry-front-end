@@ -1,7 +1,9 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: 'http://localhost:3333/',
+export const BASE_URL = 'http://localhost:3333/'
+
+export const apiClient = axios.create({
+  baseURL: BASE_URL,
 })
 
-export default api
+axios.defaults.adapter = require('axios/lib/adapters/http')

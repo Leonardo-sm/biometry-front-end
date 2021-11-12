@@ -9,15 +9,12 @@ import {
 } from 'react'
 import { FaUserAlt, FaUserTie } from 'react-icons/fa'
 
-import { PublicDataProps } from '../model/Public'
+import { DataProps } from '../model/Public'
 import { RiAdminFill } from 'react-icons/ri'
-import api from '../services/api'
+import { User } from '../model/User'
+import { apiClient } from '../services/api'
 import { useHistory } from 'react-router-dom'
 import { useToast } from '@chakra-ui/react'
-
-type User = {
-  permission: string
-}
 
 type Sidebar = {
   name: string
@@ -27,8 +24,9 @@ type Sidebar = {
 
 type AuthContextData = {
   user?: User
-  data: PublicDataProps[]
+  data: Partial<DataProps>[]
   sideBarOptions: Sidebar[]
+  setUser: (user: User) => void
   handleSelectedTab: (route: string) => void
   setSideBarOptions: Dispatch<SetStateAction<Sidebar[]>>
 }
@@ -62,20 +60,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [sideBarOptions, setSideBarOptions] =
     useState<Sidebar[]>(DEFAULT_OTIONS)
 
-  const [publicData, setPublicData] = useState<PublicDataProps[]>()
-  const [adminData, setAdminData] = useState([])
-  const [ministerData, setMinisterData] = useState([])
-
-  const [data, setData] = useState<PublicDataProps[]>([])
+  const [data, setData] = useState<Partial<DataProps>[]>([])
 
   const toast = useToast()
   const history = useHistory()
 
   useEffect(() => {
     ;(async () => {
-      if (!publicData) {
+      console.log(data)
+      if (data.length === 0) {
         try {
-          const { data } = await api.get<PublicDataProps[]>('/data/public')
+          const { data } = await apiClient.get<Partial<DataProps>[]>(
+            '/data/public'
+          )
           console.log(data)
           setData(data)
         } catch (err) {
@@ -91,20 +88,81 @@ export function AuthProvider({ children }: AuthProviderProps) {
     })()
   }, [])
 
-  async function getAdminData() {}
+  async function getPublicData() {
+    try {
+      const { data } = await apiClient.get<Partial<DataProps>[]>('/data/public')
+      setData(data)
+    } catch (err) {
+      toast({
+        title: 'Falha de conexão',
+        description: String(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+  }
 
-  async function getMinisterData() {}
+  async function getAdminData() {
+    try {
+      const { data } = await apiClient.get<Partial<DataProps>[]>(
+        `/data/adm/${user?.permission}`
+      )
+      setData(data)
+    } catch (err) {
+      toast({
+        title: 'Falha de conexão',
+        description: String(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+  }
+
+  async function getMinisterData() {
+    try {
+      const { data } = await apiClient.get<Partial<DataProps>[]>(
+        `/data/minister/${user?.permission}`
+      )
+      setData(data)
+    } catch (err) {
+      toast({
+        title: 'Falha de conexão',
+        description: String(err),
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      })
+    }
+  }
 
   function handleSelectedTab(route: string) {
     switch (route) {
       case 'public':
+        // eslint-disable-next-line no-case-declarations
+        const sidebar = sideBarOptions.map(item => {
+          return {
+            name: item.name,
+            icon: item.icon,
+            active: item.name === 'public',
+          }
+        })
+        getPublicData()
+        setSideBarOptions(sidebar)
         break
       case 'admin':
         if (user) {
           if (user.permission === 'admin' || user.permission === 'minister') {
-            if (adminData.length === 0) {
-              getAdminData()
-            }
+            getAdminData()
+            const sidebar = sideBarOptions.map(item => {
+              return {
+                name: item.name,
+                icon: item.icon,
+                active: item.name === 'admin',
+              }
+            })
+            setSideBarOptions(sidebar)
           } else {
             toast({
               title: 'Permissão negada!',
@@ -113,21 +171,23 @@ export function AuthProvider({ children }: AuthProviderProps) {
               duration: 5000,
               isClosable: true,
             })
-            break
           }
         } else {
           history.push('/login')
-          break
         }
-
-        // setData(() => adminData)
         break
       case 'minister':
         if (user) {
           if (user.permission === 'minister') {
-            if (ministerData.length === 0) {
-              getMinisterData()
-            }
+            getMinisterData()
+            const sidebar = sideBarOptions.map(item => {
+              return {
+                name: item.name,
+                icon: item.icon,
+                active: item.name === 'minister',
+              }
+            })
+            setSideBarOptions(sidebar)
           } else {
             toast({
               title: 'Permissão negada!',
@@ -136,13 +196,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
               duration: 5000,
               isClosable: true,
             })
-            break
           }
         } else {
           history.push('/login')
-          break
         }
-        // setData(() => ministerData)
+        break
+      default:
+        // getPublicData()
         break
     }
   }
@@ -153,6 +213,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         user,
         data,
         sideBarOptions,
+        setUser,
         handleSelectedTab,
         setSideBarOptions,
       }}

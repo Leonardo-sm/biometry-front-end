@@ -1,4 +1,4 @@
-import { Box, Flex, VStack } from '@chakra-ui/react'
+import { Box, Flex } from '@chakra-ui/react'
 
 import { AuthContext } from '../contexts/AuthContext'
 import Card from '../components/Card'
@@ -7,7 +7,8 @@ import Title from '../core/Title'
 import { useContext } from 'react'
 
 function Dashboard() {
-  const { handleSelectedTab, sideBarOptions, data } = useContext(AuthContext)
+  const { handleSelectedTab, sideBarOptions, data, user } =
+    useContext(AuthContext)
 
   function handleSidebarbutton(route: string) {
     handleSelectedTab(route)
@@ -17,16 +18,14 @@ function Dashboard() {
 
   return (
     <>
-      <Title title={`Biometry - Dashboard - ${currentRoute.name}`} />
+      <Title title={`Biometry - Dashboard - ${user?.permission ?? 'public'}`} />
       <Flex minH="100vh" bgColor="gray.100">
         <Sidebar onSidebarbuttonClick={route => handleSidebarbutton(route)} />
 
-        <Box as="section" px="40">
-          <VStack spacing="4" mt="8">
-            {data.map((item, index) => (
-              <Card cardData={item} key={index} />
-            ))}
-          </VStack>
+        <Box as="section" w="100%" px="20" py="4">
+          {data.map((item, index) => (
+            <Card key={index} cardData={item} route={currentRoute.name} />
+          ))}
         </Box>
       </Flex>
     </>

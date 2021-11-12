@@ -1,4 +1,3 @@
-import { BASE_URL } from '../services/api'
 import { createStandaloneToast } from '@chakra-ui/react'
 const request = window.require('request')
 const electron = window.require('electron').remote
@@ -7,13 +6,15 @@ const electronPath = window.require('path')
 
 const appPath = electron.app.getAppPath()
 
+const BASE_URL = 'http://localhost:3333'
+
 async function downloadImage(url: string) {
   const toast = createStandaloneToast()
 
   const imagesPath = electronPath.resolve(
     appPath,
     'tmp/images',
-    'fingerprint.jpg'
+    'fingerprint.tif'
   )
 
   const writer = electronFs.createWriteStream(imagesPath)
@@ -31,6 +32,8 @@ async function downloadImage(url: string) {
       })
     }
   })
+
+  return imagesPath
 }
 
 export default downloadImage
